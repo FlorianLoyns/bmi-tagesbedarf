@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0d7377">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BMI &amp; Tagesbedarf">
+<title>BMI &amp; Tagesbedarf</title>
+<meta name="description" content="BMI und Tagesbedarf für die Pflegeausbildung — Mifflin-St Jeor und PAL nach DGE.">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+<style>
+:root {
+  --teal: #0d7377;
+  --teal-dark: #0a5c5f;
+  --teal-soft: #d6ecec;
+  --teal-light: #e6f3f3;
+  --bg: #f6f8f7;
+  --bg2: #eaf2f1;
+  --card: #ffffff;
+  --ink: #0b1818;
+  --body: #2d3d3d;
+  --muted: #6b7b7b;
+  --border: #e4eae9;
+  --ok: #16a34a;
+  --warn: #dc2626;
+  --warm: #d97706;
+  --bmi-blue: #378ADD;
+  --bmi-green: #639922;
+  --bmi-amber: #EF9F27;
+  --bmi-orange: #BA7517;
+  --bmi-red: #E24B4A;
+  --bmi-darkred: #A32D2D;
+  --shadow-card: 0 1px 0 rgba(0,0,0,.02), 0 12px 28px rgba(13, 24, 24, .08);
+}
+@media (prefers-color-scheme: dark) {
+  html:not(.light) {
+    --bg: #0a1414;
+    --bg2: #0f1c1c;
+    --card: #14252a;
+    --ink: #eef2f1;
+    --body: #b8c2c1;
+    --muted: #7c8b8a;
+    --border: #1f3030;
+    --teal-light: #1a3033;
+    --teal-soft: #1e3d3f;
+    --shadow-card: 0 1px 0 rgba(0,0,0,.4), 0 12px 28px rgba(0, 0, 0, .35);
+  }
+}
+html.dark {
+  --bg: #0a1414;
+  --bg2: #0f1c1c;
+  --card: #14252a;
+  --ink: #eef2f1;
+  --body: #b8c2c1;
+  --muted: #7c8b8a;
+  --border: #1f3030;
+  --teal-light: #1a3033;
+  --teal-soft: #1e3d3f;
+  --shadow-card: 0 1px 0 rgba(0,0,0,.4), 0 12px 28px rgba(0, 0, 0, .35);
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--body);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+button, input { font: inherit; color: inherit; }
+.app {
+  max-width: 560px;
+  margin: 0 auto;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ---------- Cards ---------- */
+.icon-btn {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  display: grid; place-items: center;
+  color: var(--body);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.icon-btn:active { background: var(--teal-light); }
+
+/* ---------- Lern-Karte ---------- */
+.learn-card {
+  background: var(--teal-light);
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--body);
+}
+.learn-card strong { color: var(--ink); font-weight: 600; }
+
+/* ---------- Info-Button & Popover ---------- */
+.info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  font-family: serif;
+  font-style: italic;
+  cursor: pointer;
+  margin-left: 6px;
+  padding: 0;
+  line-height: 1;
+  transition: all .15s;
+  vertical-align: middle;
+}
+.info-btn:hover, .info-btn[aria-expanded="true"] {
+  color: var(--teal);
+  border-color: var(--teal);
+  background: var(--teal-light);
+}
+.info-popover {
+  margin-top: 14px;
+  padding: 14px;
+  background: var(--bg2);
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--body);
+}
+.info-popover[hidden] { display: none; }
+.info-popover strong { color: var(--ink); font-weight: 600; }
+.bmi-legend { display: flex; flex-direction: column; gap: 7px; margin-top: 8px; }
+.bmi-legend-row {
+  display: grid;
+  grid-template-columns: 14px 88px 1fr;
+  align-items: center;
+  gap: 10px;
+}
+.bmi-legend-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.bmi-legend-range {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--ink);
+}
+.bmi-legend-name { color: var(--body); }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+}
+.card.lg { border-radius: 18px; padding: 18px; }
+.card-title {
+  font-size: 12px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .05em;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+/* ---------- Eingabe-Grid ---------- */
+.input-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.input-grid .full { grid-column: 1 / -1; }
+@media (max-width: 360px) {
+  .input-grid { grid-template-columns: 1fr; }
+}
+.input-block label {
+  font-size: 12px; color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase; letter-spacing: .04em;
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 8px;
+}
+.input-block .out {
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.01em;
+  text-transform: none;
+}
+.input-block .out small {
+  font-weight: 500;
+  color: var(--muted);
+  margin-left: 4px;
+  font-size: 11px;
+}
+
+/* ---------- Slider ---------- */
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: var(--border);
+  border-radius: 999px;
+  outline: none;
+  cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--teal);
+  cursor: pointer;
+  border: 3px solid var(--card);
+  box-shadow: 0 2px 8px rgba(13,115,119,.35);
+}
+input[type=range]::-moz-range-thumb {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--teal);
+  cursor: pointer;
+  border: 3px solid var(--card);
+  box-shadow: 0 2px 8px rgba(13,115,119,.35);
+}
+.chip, .icon-btn, button {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ---------- Sex-Toggle ---------- */
+.chip-row { display: flex; gap: 6px; }
+.chip {
+  flex: 1;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: var(--bg2);
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--body);
+  cursor: pointer;
+  transition: all .15s;
+}
+.chip.active {
+  background: var(--teal);
+  color: white;
+  border-color: var(--teal);
+  box-shadow: 0 4px 12px rgba(13,115,119,.22);
+}
+
+/* ---------- BMI-Card ---------- */
+.bmi-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 18px;
+  position: relative;
+}
+.bmi-card .info-btn {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  margin-left: 0;
+}
+.bmi-head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 14px;
+  padding-left: 26px;
+}
+.bmi-label { font-size: 13px; color: var(--muted); }
+.bmi-value-wrap {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.02em;
+}
+.bmi-value {
+  font-size: 32px; font-weight: 800; color: var(--ink);
+}
+.bmi-value-unit {
+  font-size: 13px; color: var(--muted); margin-left: 4px; font-weight: 500;
+}
+.bmi-scale {
+  position: relative;
+  height: 14px;
+  border-radius: 7px;
+  overflow: hidden;
+  display: flex;
+  margin: 8px 0 6px;
+}
+.bmi-scale-seg { height: 100%; }
+.bmi-marker {
+  position: absolute;
+  top: -4px; bottom: -4px;
+  width: 3px;
+  background: var(--ink);
+  border-radius: 2px;
+  left: 49%;
+  transition: left .25s cubic-bezier(.4,.2,.2,1);
+  box-shadow: 0 0 0 2px var(--card);
+}
+.bmi-ticks {
+  display: flex; justify-content: space-between;
+  font-size: 10px; color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+.bmi-cat-row {
+  display: flex; align-items: center; gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.bmi-cat-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--bmi-green);
+  flex-shrink: 0;
+}
+.bmi-cat {
+  font-size: 14px; font-weight: 700; color: var(--ink);
+  letter-spacing: -.01em;
+}
+.bmi-cat-source {
+  margin-left: auto;
+  font-size: 11px; color: var(--muted);
+  font-weight: 500;
+}
+
+/* ---------- Energie-Karten ---------- */
+.energy-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.energy-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+}
+.energy-card.primary {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: white;
+  box-shadow: 0 8px 22px rgba(13,115,119,.22);
+}
+.energy-label {
+  font-size: 11px;
+  text-transform: uppercase; letter-spacing: .05em;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.energy-card.primary .energy-label { color: rgba(255,255,255,.85); }
+.energy-num {
+  font-size: 24px; font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums;
+}
+.energy-card.primary .energy-num { color: white; }
+.energy-unit {
+  font-size: 12px; color: var(--muted);
+  margin-left: 3px;
+  font-weight: 500;
+}
+.energy-card.primary .energy-unit { color: rgba(255,255,255,.85); }
+.energy-formula {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.energy-card.primary .energy-formula { color: rgba(255,255,255,.7); }
+
+/* ---------- Erklärungs-Box ---------- */
+details.explainer {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+details.explainer summary {
+  padding: 14px 16px;
+  cursor: pointer;
+  font-size: 13px; font-weight: 600;
+  color: var(--ink);
+  list-style: none;
+  display: flex; justify-content: space-between; align-items: center;
+}
+details.explainer summary::-webkit-details-marker { display: none; }
+details.explainer summary .chev {
+  font-size: 22px; color: var(--muted);
+  transition: transform .2s;
+  font-weight: 300;
+  line-height: 1;
+}
+details.explainer[open] summary .chev { transform: rotate(45deg); }
+details.explainer .explainer-body {
+  padding: 0 16px 16px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--body);
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+details.explainer .explainer-body p {
+  margin: 0 0 6px;
+}
+details.explainer .explainer-body p:last-child { margin-bottom: 0; }
+details.explainer .explainer-body h4 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 16px 0 6px;
+  letter-spacing: -.01em;
+}
+details.explainer .explainer-body h4:first-child { margin-top: 0; }
+details.explainer .explainer-body strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+details.explainer .explainer-body code {
+  font-family: "SF Mono", "Menlo", "Consolas", monospace;
+  background: var(--bg2);
+  color: var(--teal);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  display: inline-block;
+  margin-top: 6px;
+  line-height: 1.6;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Praxis-Hinweis ---------- */
+.note-card {
+  background: var(--teal-light);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex; gap: 12px;
+  align-items: flex-start;
+}
+.note-icon {
+  flex-shrink: 0;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--teal);
+  color: white;
+  display: grid; place-items: center;
+  font-weight: 800;
+  font-style: italic;
+  font-family: "Iowan Old Style", "Palatino", "Palatino Linotype", Georgia, serif;
+  font-size: 15px;
+}
+.note-body { font-size: 13px; line-height: 1.55; color: var(--body); }
+.note-body strong { color: var(--ink); font-weight: 600; }
+
+/* ---------- Footer ---------- */
+.footer {
+  text-align: center;
+  font-size: 11px;
+  color: var(--muted);
+  padding: 4px 0 14px;
+  letter-spacing: .02em;
+  line-height: 1.7;
+}
+.footer a { color: var(--muted); text-decoration: none; }
+.footer a:hover { text-decoration: underline; }
+.footer-sep { margin: 0 6px; opacity: .5; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Intro -->
+  <div style="padding-top: 24px; position: relative;">
+    <h1 style="margin:0; padding-right: 50px; font-size:22px; color:var(--ink); letter-spacing:-.015em; line-height:1.1;">BMI &amp; Tagesbedarf</h1>
+    <p style="margin:5px 0 0; font-size:13px; color:var(--muted); line-height:1.3;">Werte einstellen, Ergebnis und Rechenweg live mitsehen.</p>
+    <button class="icon-btn" id="theme-btn" aria-label="Farbschema umschalten" style="position: absolute; top: 24px; right: 0;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+    </button>
+  </div>
+
+  <!-- Was ist das? -->
+  <div class="learn-card">
+    <strong>Was rechnen wir hier?</strong> Der <strong>BMI</strong> ordnet Gewicht und Körpergröße grob in Gewichtskategorien ein. Der <strong>Grundumsatz</strong> ist die Energie, die der Körper in völliger Ruhe verbraucht. Der <strong>Tagesbedarf</strong> rechnet die Alltags-Aktivität dazu — also der reale Energiebedarf im Alltag.
+  </div>
+
+  <!-- Eingaben -->
+  <div class="card">
+    <div class="input-grid">
+      <div class="input-block full">
+        <label>Geschlecht (biologisch)</label>
+        <div class="chip-row">
+          <button class="chip active" data-sex="w">weiblich</button>
+          <button class="chip" data-sex="m">männlich</button>
+        </div>
+      </div>
+      <div class="input-block">
+        <label>Alter <span class="out" id="age-out">45 <small>Jahre</small></span></label>
+        <input type="range" id="age" min="18" max="90" value="45" step="1">
+      </div>
+      <div class="input-block">
+        <label>Größe <span class="out" id="height-out">170 <small>cm</small></span></label>
+        <input type="range" id="height" min="140" max="210" value="170" step="1">
+      </div>
+      <div class="input-block full">
+        <label>Gewicht <span class="out" id="weight-out">75 <small>kg</small></span></label>
+        <input type="range" id="weight" min="40" max="160" value="75" step="1">
+      </div>
+      <div class="input-block full">
+        <label>Aktivität (PAL) <span class="out" id="pal-out">1,6 <small>Pflegealltag</small></span></label>
+        <input type="range" id="pal" min="12" max="22" value="16" step="1">
+      </div>
+    </div>
+  </div>
+
+  <!-- Erklärung -->
+  <details class="explainer">
+    <summary>Wie wird gerechnet? <span class="chev">+</span></summary>
+    <div class="explainer-body">
+      <h4>BMI</h4>
+      <p>Der BMI vergleicht Gewicht und Körpergröße und ordnet das Verhältnis grob in Gewichtskategorien ein. Aus Gewicht und Größe lässt er sich so berechnen:</p>
+      <p><strong>BMI</strong> = Gewicht (kg) ÷ Größe (m)²</p>
+      <p><code id="bmi-formula">75 ÷ 1,70² = 25,9</code></p>
+
+      <h4>Grundumsatz</h4>
+      <p>Der Grundumsatz ist die Energie, die der Körper in völliger Ruhe für Atmung, Kreislauf und Organfunktionen verbraucht. Die Mifflin-St-Jeor-Formel (1990) berücksichtigt biologisches Geschlecht, Gewicht, Größe und Alter:</p>
+      <p id="bmr-formel-name"><strong>Grundumsatz (Frauen)</strong> = 10 × kg + 6,25 × cm − 5 × Alter − 161</p>
+      <p><code id="bmr-formula"></code></p>
+
+      <h4>Tagesbedarf</h4>
+      <p>Der Tagesbedarf ist die Energie, die im Alltag tatsächlich gebraucht wird. Dafür wird der Grundumsatz mit dem PAL-Faktor (Physical Activity Level) multipliziert: 1,2 bettlägerig · 1,4 sitzend · 1,6 Pflegealltag · 1,8 stehend · 2,0+ körperlich schwer.</p>
+      <p><strong>Tagesbedarf</strong> = Grundumsatz × PAL</p>
+      <p><code id="tdee-formula"></code></p>
+    </div>
+  </details>
+
+  <!-- BMI Card -->
+  <div class="bmi-card">
+    <button type="button" class="info-btn" id="bmi-info-btn" aria-expanded="false" aria-controls="bmi-info-pop" aria-label="BMI-Skala anzeigen">i</button>
+    <div class="bmi-head">
+      <span class="bmi-label">Body-Mass-Index</span>
+      <div class="bmi-value-wrap">
+        <span class="bmi-value" id="bmi-val">25,9</span>
+        <span class="bmi-value-unit">kg/m²</span>
+      </div>
+    </div>
+    <div class="bmi-scale">
+      <div class="bmi-scale-seg" style="flex:18.5; background:var(--bmi-blue);"></div>
+      <div class="bmi-scale-seg" style="flex:6.5; background:var(--bmi-green);"></div>
+      <div class="bmi-scale-seg" style="flex:5; background:var(--bmi-amber);"></div>
+      <div class="bmi-scale-seg" style="flex:5; background:var(--bmi-orange);"></div>
+      <div class="bmi-scale-seg" style="flex:5; background:var(--bmi-red);"></div>
+      <div class="bmi-marker" id="bmi-marker"></div>
+    </div>
+    <div class="bmi-ticks">
+      <span>16</span><span>18,5</span><span>25</span><span>30</span><span>35</span><span>40</span>
+    </div>
+    <div class="bmi-cat-row">
+      <span class="bmi-cat-dot" id="bmi-dot"></span>
+      <span class="bmi-cat" id="bmi-cat">Normalgewicht</span>
+      <span class="bmi-cat-source">WHO-Klassifikation</span>
+    </div>
+    <div class="info-popover" id="bmi-info-pop" hidden>
+      <p style="margin:0;"><strong>WHO-Klassifikation</strong> für Erwachsene zwischen 18 und 65 Jahren:</p>
+      <div class="bmi-legend">
+        <div class="bmi-legend-row"><span class="bmi-legend-dot" style="background:var(--bmi-blue)"></span><span class="bmi-legend-range">unter 18,5</span><span class="bmi-legend-name">Untergewicht</span></div>
+        <div class="bmi-legend-row"><span class="bmi-legend-dot" style="background:var(--bmi-green)"></span><span class="bmi-legend-range">18,5 – 24,9</span><span class="bmi-legend-name">Normalgewicht</span></div>
+        <div class="bmi-legend-row"><span class="bmi-legend-dot" style="background:var(--bmi-amber)"></span><span class="bmi-legend-range">25,0 – 29,9</span><span class="bmi-legend-name">Präadipositas</span></div>
+        <div class="bmi-legend-row"><span class="bmi-legend-dot" style="background:var(--bmi-orange)"></span><span class="bmi-legend-range">30,0 – 34,9</span><span class="bmi-legend-name">Adipositas Grad I</span></div>
+        <div class="bmi-legend-row"><span class="bmi-legend-dot" style="background:var(--bmi-red)"></span><span class="bmi-legend-range">35,0 – 39,9</span><span class="bmi-legend-name">Adipositas Grad II</span></div>
+        <div class="bmi-legend-row"><span class="bmi-legend-dot" style="background:var(--bmi-darkred)"></span><span class="bmi-legend-range">ab 40,0</span><span class="bmi-legend-name">Adipositas Grad III</span></div>
+      </div>
+      <p style="margin:12px 0 0;"><strong>Bei Senioren über 65:</strong> Der Normalbereich liegt höher — etwa 22–29 kg/m² (DGE-Empfehlungen variieren je nach Quelle). Ein BMI unter 22 ist im Alter ein Warnzeichen für Mangelernährung; leichtes Übergewicht wirkt eher schützend.</p>
+    </div>
+  </div>
+
+  <!-- Energie-Karten -->
+  <div class="energy-grid">
+    <div class="energy-card">
+      <div class="energy-label">Grundumsatz</div>
+      <div><span class="energy-num" id="bmr-val">1.427</span><span class="energy-unit"> kcal</span></div>
+      <div class="energy-formula">Mifflin-St Jeor</div>
+    </div>
+    <div class="energy-card primary">
+      <div class="energy-label">Tagesbedarf</div>
+      <div><span class="energy-num" id="tdee-val">2.282</span><span class="energy-unit"> kcal</span></div>
+      <div class="energy-formula">Grundumsatz × PAL</div>
+    </div>
+  </div>
+
+  <!-- Praxis-Hinweis -->
+  <div class="note-card">
+    <div class="note-icon">i</div>
+    <div class="note-body">
+      <strong>Lehr-Tool, keine Ernährungsberatung.</strong> Werte sind Richtwerte für gesunde Erwachsene. In der Pflege ist der BMI Teil klinischer Mangelernährungs-Screenings (NRS-2002, MNA-SF). Bei Krankheit, Tumorgeschehen, Wunden oder Fieber kann der reale Bedarf deutlich abweichen — dann gelten klinische Schätzformeln (z. B. 25–35 kcal/kg KG).
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <a href="https://florianloyns.github.io/Impressum/">Impressum</a>
+  </div>
+
+</div>
+
+<script>
+// PWA: Service Worker registrieren für Offline-Fähigkeit
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+
+(function() {
+  const palInfo = {
+    12: ['1,2', 'bettlägerig'],
+    13: ['1,3', 'sitzend, kaum aktiv'],
+    14: ['1,4', 'sitzend'],
+    15: ['1,5', 'sitzend mit etwas Bewegung'],
+    16: ['1,6', 'Pflegealltag'],
+    17: ['1,7', 'stehend, gehend'],
+    18: ['1,8', 'stehend, körperlich aktiv'],
+    19: ['1,9', 'körperlich aktiv'],
+    20: ['2,0', 'körperlich schwer'],
+    21: ['2,1', 'körperlich sehr schwer'],
+    22: ['2,2', 'Leistungssport']
+  };
+
+  let sex = 'w';
+  const $ = id => document.getElementById(id);
+  const fmt = n => Math.round(n).toLocaleString('de-DE');
+  const fmt1 = n => n.toFixed(1).replace('.', ',');
+  const fmt2 = n => n.toFixed(2).replace('.', ',');
+
+  // Theme toggle
+  try {
+    const saved = localStorage.getItem('theme');
+    if (saved) document.documentElement.classList.add(saved);
+  } catch(e){}
+  $('theme-btn').addEventListener('click', () => {
+    const html = document.documentElement;
+    const isDark = html.classList.contains('dark') ||
+                   (!html.classList.contains('light') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    html.classList.remove('dark', 'light');
+    html.classList.add(isDark ? 'light' : 'dark');
+    try { localStorage.setItem('theme', isDark ? 'light' : 'dark'); } catch(e){}
+  });
+
+  // BMI Info-Popover Toggle
+  const bmiInfoBtn = $('bmi-info-btn');
+  const bmiInfoPop = $('bmi-info-pop');
+  bmiInfoBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const open = bmiInfoPop.hidden;
+    bmiInfoPop.hidden = !open;
+    bmiInfoBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#bmi-info-pop, #bmi-info-btn')) {
+      bmiInfoPop.hidden = true;
+      bmiInfoBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  // Sex toggle
+  document.querySelectorAll('.chip[data-sex]').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.chip[data-sex]').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      sex = b.dataset.sex;
+      update();
+    });
+  });
+
+  // Sliders
+  ['age', 'height', 'weight', 'pal'].forEach(id => {
+    $(id).addEventListener('input', update);
+  });
+
+  function update() {
+    const age = +$('age').value;
+    const h = +$('height').value;
+    const w = +$('weight').value;
+    const palRaw = +$('pal').value;
+    const pal = palRaw / 10;
+
+    $('age-out').innerHTML = age + ' <small>Jahre</small>';
+    $('height-out').innerHTML = h + ' <small>cm</small>';
+    $('weight-out').innerHTML = w + ' <small>kg</small>';
+    $('pal-out').innerHTML = palInfo[palRaw][0] + ' <small>' + palInfo[palRaw][1] + '</small>';
+
+    // BMI
+    const bmi = w / Math.pow(h / 100, 2);
+    $('bmi-val').textContent = fmt1(bmi);
+
+    const bmiClamp = Math.max(16, Math.min(40, bmi));
+    const pct = ((bmiClamp - 16) / 24) * 100;
+    $('bmi-marker').style.left = pct + '%';
+
+    let cat, color;
+    if (bmi < 18.5)      { cat = 'Untergewicht';        color = 'var(--bmi-blue)'; }
+    else if (bmi < 25)   { cat = 'Normalgewicht';       color = 'var(--bmi-green)'; }
+    else if (bmi < 30)   { cat = 'Präadipositas';       color = 'var(--bmi-amber)'; }
+    else if (bmi < 35)   { cat = 'Adipositas Grad I';   color = 'var(--bmi-orange)'; }
+    else if (bmi < 40)   { cat = 'Adipositas Grad II';  color = 'var(--bmi-red)'; }
+    else                 { cat = 'Adipositas Grad III'; color = 'var(--bmi-darkred)'; }
+    $('bmi-cat').textContent = cat;
+    $('bmi-dot').style.background = color;
+
+    // BMR nach Mifflin-St Jeor
+    const bmr = sex === 'm'
+      ? 10 * w + 6.25 * h - 5 * age + 5
+      : 10 * w + 6.25 * h - 5 * age - 161;
+    const tdee = bmr * pal;
+
+    $('bmr-val').textContent = fmt(bmr);
+    $('tdee-val').textContent = fmt(tdee);
+
+    // Formelzeilen in Erklärungs-Box
+    $('bmi-formula').textContent = w + ' kg ÷ (' + fmt2(h / 100) + ' m)² = ' + fmt1(bmi) + ' kg/m²';
+    const off = sex === 'm' ? '+ 5' : '− 161';
+    const sexLabel = sex === 'm' ? 'Männer' : 'Frauen';
+    $('bmr-formel-name').innerHTML = '<strong>Grundumsatz (' + sexLabel + ')</strong> = 10 × kg + 6,25 × cm − 5 × Alter ' + off;
+    $('bmr-formula').textContent = '10 × ' + w + ' + 6,25 × ' + h + ' − 5 × ' + age + ' ' + off + ' = ' + fmt(bmr) + ' kcal';
+    $('tdee-formula').textContent = fmt(bmr) + ' kcal × ' + fmt1(pal) + ' = ' + fmt(tdee) + ' kcal';
+  }
+
+  update();
+})();
+</script>
+</body>
+</html>

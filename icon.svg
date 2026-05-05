@@ -1,0 +1,28 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="BMI und Tagesbedarf">
+  <!-- Teal-Hintergrund -->
+  <rect width="512" height="512" fill="#0d7377"/>
+
+  <!-- BMI-Skala: 5 farbige Segmente in Pillenform -->
+  <g transform="translate(76, 216)">
+    <defs>
+      <clipPath id="bmi-strip-clip">
+        <rect width="360" height="80" rx="40"/>
+      </clipPath>
+    </defs>
+    <g clip-path="url(#bmi-strip-clip)">
+      <!-- Untergewicht -->
+      <rect x="0"   y="0" width="166" height="80" fill="#378ADD"/>
+      <!-- Normalgewicht -->
+      <rect x="166" y="0" width="59"  height="80" fill="#639922"/>
+      <!-- Praeadipositas -->
+      <rect x="225" y="0" width="45"  height="80" fill="#EF9F27"/>
+      <!-- Adipositas Grad I -->
+      <rect x="270" y="0" width="45"  height="80" fill="#BA7517"/>
+      <!-- Adipositas Grad II -->
+      <rect x="315" y="0" width="45"  height="80" fill="#E24B4A"/>
+    </g>
+
+    <!-- Weisser Marker in der Normalgewicht-Zone -->
+    <rect x="188" y="-16" width="14" height="112" rx="7" fill="white"/>
+  </g>
+</svg>
