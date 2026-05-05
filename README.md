@@ -3,10 +3,13 @@
 **BMI, Grundumsatz und täglicher Energiebedarf für die Pflegeausbildung — Werte einstellen, Ergebnis und Rechenweg live mitsehen**
 
 [![Lizenz: CC BY-NC-SA 4.0](https://img.shields.io/badge/Lizenz-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-blue)](https://florianloyns.github.io/bmi-tagesbedarf/)
 ![Keine Abhängigkeiten](https://img.shields.io/badge/Abh%C3%A4ngigkeiten-keine-brightgreen)
 ![PWA](https://img.shields.io/badge/PWA-offline--f%C3%A4hig-teal)
 
 Eine browser-basierte App für Pflege-Auszubildende: Body-Mass-Index, Grundumsatz und Tagesbedarf live berechnen. Slider verschieben, fertig — Ergebnis und Rechenweg erscheinen direkt darunter.
+
+**[Jetzt rechnen](https://florianloyns.github.io/bmi-tagesbedarf/)**
 
 ## Was die App rechnet
 
