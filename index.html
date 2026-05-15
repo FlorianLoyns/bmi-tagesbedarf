@@ -116,12 +116,25 @@ button, input { font: inherit; color: inherit; }
 .learn-card {
   background: var(--teal-light);
   border-radius: 14px;
-  padding: 14px 16px;
+  padding: 14px 28px 14px 16px;
   font-size: 13px;
   line-height: 1.55;
   color: var(--body);
+  position: relative;
+  overflow: hidden;
+  transition: max-height .35s ease, opacity .3s ease, padding .35s ease, margin .35s ease;
 }
 .learn-card strong { color: var(--ink); font-weight: 600; }
+.learn-card-close {
+  position: absolute;
+  top: 7px; right: 9px;
+  background: none; border: none;
+  font-size: 15px; color: var(--muted);
+  cursor: pointer; padding: 2px 4px;
+  line-height: 1; border-radius: 5px;
+  opacity: .6;
+}
+.learn-card-close:hover { opacity: 1; }
 
 /* ---------- Info-Button & Popover ---------- */
 .info-btn {
@@ -515,7 +528,8 @@ details.explainer .explainer-body code {
   </div>
 
   <!-- Was ist das? -->
-  <div class="learn-card">
+  <div class="learn-card" id="learn-card">
+    <button class="learn-card-close" id="learn-close" aria-label="Hinweis schließen">✕</button>
     <strong>Was rechnen wir hier?</strong> Der <strong>BMI</strong> ordnet Gewicht und Körpergröße grob in Gewichtskategorien ein. Der <strong>Grundumsatz</strong> ist die Energie, die der Körper in völliger Ruhe verbraucht. Der <strong>Tagesbedarf</strong> rechnet die Alltags-Aktivität dazu — also der reale Energiebedarf im Alltag.
   </div>
 
@@ -663,6 +677,27 @@ if ('serviceWorker' in navigator) {
 
   let sex = 'w';
   const $ = id => document.getElementById(id);
+
+  // Info-Karte schließen
+  (() => {
+    const card = $('learn-card');
+    if (!card) return;
+    try { if (localStorage.getItem('bmi-info-hidden') === '1') card.style.display = 'none'; } catch(e) {}
+    $('learn-close').addEventListener('click', () => {
+      const h = card.scrollHeight;
+      card.style.maxHeight = h + 'px';
+      requestAnimationFrame(() => {
+        card.style.maxHeight = '0';
+        card.style.opacity = '0';
+        card.style.paddingTop = '0';
+        card.style.paddingBottom = '0';
+        card.style.marginBottom = '0';
+      });
+      setTimeout(() => { card.style.display = 'none'; }, 380);
+      try { localStorage.setItem('bmi-info-hidden', '1'); } catch(e) {}
+    });
+  })();
+
   const fmt = n => Math.round(n).toLocaleString('de-DE');
   const fmt1 = n => n.toFixed(1).replace('.', ',');
   const fmt2 = n => n.toFixed(2).replace('.', ',');
